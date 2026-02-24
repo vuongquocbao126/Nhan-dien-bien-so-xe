@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý ETC - Thu phí & Giao dịch</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet">
+    
+    <style>
+        .management-section {
+            padding: 2rem 0;
+        }
+        
+        .feature-card {
+            border: 3px solid #2c3e50;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card .card-header {
+            background: #34495e;
+            color: white;
+            border-bottom: 3px solid #2c3e50;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .feature-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        .section-header {
+            background: #34495e;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 3px solid #2c3e50;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 3px solid #2c3e50;
+            margin-bottom: 2rem;
+        }
+        
+        .result-card {
+            margin-top: 1rem;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        
+        .error-card {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .success-card {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .transaction-item {
+            border-bottom: 2px solid #ecf0f1;
+            padding: 1rem;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .amount-positive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .amount-negative {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .balance-display {
+            background: #34495e;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+            border: 2px solid #2c3e50;
+        }
+        
+        .balance-amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #2980b9;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #21618c;
+        }
+        
+        .form-control {
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .navbar {
+            border-bottom: 3px solid #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-car"></i> ETC Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-camera"></i> Scanner</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/management"><i class="fas fa-cog"></i> Quản lý</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/swagger/"><i class="fas fa-book"></i> API Docs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="section-header text-center">
+            <h1><i class="fas fa-cog"></i> Quản lý hệ thống ETC</h1>
+            <p class="mb-0">Nạp tiền tài khoản, quản lý giao dịch và theo dõi hoạt động</p>
+        </div>
+
+        <!-- Vehicle Search Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="form-section">
+                    <h3><i class="fas fa-search"></i> Tra cứu xe</h3>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control form-control-lg" id="searchPlate" 
+                                   placeholder="Nhập biển số xe (ví dụ: 30G12345)" maxlength="20">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-primary btn-lg w-100" id="searchBtn">
+                                <i class="fas fa-search"></i> Tra cứu
+                            </button>
+                        </div>
+                    </div>
+                    <div id="vehicleInfo" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="row">
+            <!-- Top Up -->
+            <div class="col-lg-6 mb-4">
+                <div class="card feature-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-plus-circle"></i> Nạp tiền</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="topupForm">
+                            <div class="mb-3">
+                                <label class="form-label">Biển số xe</label>
+                                <input type="text" class="form-control" id="topupPlate" placeholder="30G12345" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Số tiền nạp (VND)</label>
+                                <input type="number" class="form-control" id="topupAmount" placeholder="100000" required min="10000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ghi chú</label>
+                                <input type="text" class="form-control" id="topupDescription" placeholder="Nạp tiền ETC">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Số tiền nhanh</label>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-primary quick-amount" data-amount="100000">100K</button>
+                                    <button type="button" class="btn btn-outline-primary quick-amount" data-amount="200000">200K</button>
+                                    <button type="button" class="btn btn-outline-primary quick-amount" data-amount="500000">500K</button>
+                                    <button type="button" class="btn btn-outline-primary quick-amount" data-amount="1000000">1M</button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-plus"></i> Nạp tiền
+                            </button>
+                        </form>
+                        <div id="topupResult" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="col-lg-6 mb-4">
+                <div class="card feature-card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-history"></i> Lịch sử giao dịch</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="historyForm">
+                            <div class="mb-3">
+                                <label class="form-label">Biển số xe</label>
+                                <input type="text" class="form-control" id="historyPlate" placeholder="30G12345" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Thời gian</label>
+                                <select class="form-control" id="historyDays">
+                                    <option value="7">7 ngày gần nhất</option>
+                                    <option value="30">30 ngày gần nhất</option>
+                                    <option value="90">90 ngày gần nhất</option>
+                                    <option value="365">1 năm gần nhất</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-list"></i> Xem lịch sử
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Results -->
+        <div id="historyResults" style="display: none;">
+            <div class="form-section">
+                <h3><i class="fas fa-history"></i> Lịch sử giao dịch</h3>
+                <div id="historyContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        function formatDateTime(dateString) {
+            return new Date(dateString).toLocaleString('vi-VN');
+        }
+
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            const cardClass = type === 'success' ? 'success-card' : 
+                             type === 'error' ? 'error-card' : 'result-card';
+            
+            element.innerHTML = `
+                <div class="card ${cardClass}">
+                    <div class="card-body">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            element.style.display = 'block';
+        }
+
+        function hideResult(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // Vehicle search
+        document.getElementById('searchBtn').addEventListener('click', async function() {
+            const plateNumber = document.getElementById('searchPlate').value.trim();
+            if (!plateNumber) {
+                alert('Vui lòng nhập biển số xe!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/vehicles/${plateNumber}/detailed`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const vehicle = data.data;
+                    const balanceStatus = vehicle.account_balance >= 50000 ? 'sufficient' : 
+                                        vehicle.account_balance > 0 ? 'low' : 'empty';
+                    
+                    document.getElementById('vehicleInfo').innerHTML = `
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5><i class="fas fa-user"></i> Thông tin chủ xe</h5>
+                                        <p><strong>Tên:</strong> ${vehicle.owner_name}</p>
+                                        <p><strong>SĐT:</strong> ${vehicle.owner_phone || 'N/A'}</p>
+                                        <p><strong>Xe:</strong> ${vehicle.brand || ''} ${vehicle.model || ''} - ${vehicle.color || 'N/A'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="balance-display">
+                                            <div class="balance-label">Số dư hiện tại</div>
+                                            <div class="balance-amount">${formatCurrency(vehicle.account_balance)}</div>
+                                            <span class="badge bg-${balanceStatus === 'sufficient' ? 'success' : balanceStatus === 'low' ? 'warning' : 'danger'}">
+                                                ${balanceStatus === 'sufficient' ? 'Đủ' : balanceStatus === 'low' ? 'Thấp' : 'Hết tiền'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary" onclick="fillAllForms('${plateNumber}')">
+                                    <i class="fas fa-edit"></i> Điền vào tất cả form
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('vehicleInfo').style.display = 'block';
+                } else {
+                    showResult('vehicleInfo', `<i class="fas fa-exclamation-triangle"></i> ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('vehicleInfo', `<i class="fas fa-times"></i> Lỗi kết nối: ${error.message}`, 'error');
+            }
+        });
+
+        // Fill all forms with plate number
+        function fillAllForms(plateNumber) {
+            document.getElementById('tollPlate').value = plateNumber;
+            document.getElementById('topupPlate').value = plateNumber;
+            document.getElementById('historyPlate').value = plateNumber;
+        }
+
+        // Quick amount buttons
+        document.querySelectorAll('.quick-amount').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('topupAmount').value = this.dataset.amount;
+            });
+        });
+
+        // Top up
+        document.getElementById('topupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const plateNumber = document.getElementById('topupPlate').value.trim();
+            const amount = parseFloat(document.getElementById('topupAmount').value);
+            const description = document.getElementById('topupDescription').value.trim() || 'Nạp tiền ETC';
+
+            if (!plateNumber || !amount) {
+                showResult('topupResult', '<i class="fas fa-exclamation-triangle"></i> Vui lòng điền đầy đủ thông tin!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/transactions/topup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        license_plate: plateNumber,
+                        amount: amount,
+                        description: description
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const result = data.data;
+                    showResult('topupResult', `
+                        <h6><i class="fas fa-check-circle text-success"></i> Nạp tiền thành công!</h6>
+                        <p><strong>Biển số:</strong> ${result.license_plate}</p>
+                        <p><strong>Số tiền nạp:</strong> ${formatCurrency(amount)}</p>
+                        <p><strong>Số dư cũ:</strong> ${formatCurrency(result.old_balance)}</p>
+                        <p><strong>Số dư mới:</strong> ${formatCurrency(result.new_balance)}</p>
+                    `, 'success');
+                    
+                    // Reset form
+                    document.getElementById('topupForm').reset();
+                } else {
+                    showResult('topupResult', `<i class="fas fa-times"></i> ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('topupResult', `<i class="fas fa-times"></i> Lỗi kết nối: ${error.message}`, 'error');
+            }
+        });
+
+        // Transaction history
+        document.getElementById('historyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const plateNumber = document.getElementById('historyPlate').value.trim();
+            const days = document.getElementById('historyDays').value;
+
+            if (!plateNumber) {
+                alert('Vui lòng nhập biển số xe!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/transactions/${plateNumber}/history?days=${days}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const transactions = data.data.transactions;
+                    
+                    if (transactions.length === 0) {
+                        document.getElementById('historyContent').innerHTML = `
+                            <div class="text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>Không có giao dịch nào trong ${days} ngày qua</p>
+                            </div>
+                        `;
+                    } else {
+                        let historyHTML = '';
+                        transactions.forEach(trans => {
+                            const isPositive = trans.transaction_type === 'topup';
+                            const icon = trans.transaction_type === 'topup' ? 'fa-plus-circle' : 'fa-road';
+                            const color = isPositive ? 'text-success' : 'text-danger';
+                            
+                            historyHTML += `
+                                <div class="transaction-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas ${icon} ${color} me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">${trans.transaction_type === 'topup' ? 'Nạp tiền' : 'Thu phí'}</h6>
+                                                <small class="text-muted">${formatDateTime(trans.created_at)}</small>
+                                                ${trans.toll_station ? `<br><small>Trạm: ${trans.toll_station}</small>` : ''}
+                                                ${trans.description ? `<br><small>${trans.description}</small>` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="${isPositive ? 'amount-positive' : 'amount-negative'}">
+                                                ${isPositive ? '+' : '-'}${formatCurrency(Math.abs(trans.amount))}
+                                            </div>
+                                            <small class="text-muted">Còn: ${formatCurrency(trans.balance_after)}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        document.getElementById('historyContent').innerHTML = `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Lịch sử giao dịch - ${plateNumber}</h5>
+                                    <small class="text-muted">Tổng ${transactions.length} giao dịch trong ${days} ngày qua</small>
+                                </div>
+                                <div class="card-body p-0">
+                                    ${historyHTML}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    document.getElementById('historyResults').style.display = 'block';
+                    document.getElementById('historyResults').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert(`Lỗi kết nối: ${error.message}`);
+            }
+        });
+
+        // Auto-focus search input
+        document.getElementById('searchPlate').focus();
+    </script>
+</body>
+</html>
